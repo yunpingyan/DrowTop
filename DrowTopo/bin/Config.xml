@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topoconfig version="1.0">
+  <workspacepath>F:/workspace.ccs.1.1</workspacepath>
+  <picturepath>F:/</picturepath>
+  <toolpath>C:/Program Files/Graphviz2.29/bin/dot.exe</toolpath>
+  <color-config>blue,green,red,yellow,pink,white,gray,brown,gold,cyan,skyblue</color-config>
+  <packagename-config>purescale,maestro,rainmaker,scentry,sce</packagename-config>
+</topoconfig>

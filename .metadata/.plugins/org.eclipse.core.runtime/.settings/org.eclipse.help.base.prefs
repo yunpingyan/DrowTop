@@ -1,0 +1,8 @@
+#Tue Jul 24 15:54:59 CST 2012
+remoteHelpPath=/infocenter/clmhelp/v3r0,/help
+remoteHelpOn=true
+eclipse.preferences.version=1
+remoteHelpPort=80,63650
+remoteHelpName=Rational Team Concert,Local
+remoteHelpICEnabled=true,false
+remoteHelpHost=publib.boulder.ibm.com,127.0.0.1

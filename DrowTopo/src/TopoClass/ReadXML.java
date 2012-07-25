@@ -1,0 +1,287 @@
+package TopoClass;
+
+import java.io.File;
+import java.util.*;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import java.util.Hashtable;
+
+public class ReadXML {
+	public String [] outStrings;
+	public String topoString="";
+	public  String [] ColorStrings;
+	public static int j=0;
+	private void path(File dir, ArrayList<File> Arr) {
+		
+		File[] files = dir.listFiles();
+		if (files == null)
+			return;
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isDirectory()) {
+				if (!(files[i].getName().equals(".metadata"))) {
+					path(files[i], Arr);
+				}
+			} else {
+				// System.out.println(files[i].getAbsolutePath());
+				if (files[i].getName().equals("ivy.xml")&&files[i].getParent().contains("config")&&!files[i].getParent().contains("export")&&!files[i].getParent().contains("output")&&ContainOrNot(files[i].getParent())) {
+					Arr.add(files[i]);
+					String strFileName = files[i].getAbsolutePath()
+							.toLowerCase();
+					System.out.println("---" + strFileName+ ++j);
+					
+				}
+			}
+		}
+	}
+
+	private boolean ContainOrNot(Object object){
+		boolean bool=false;
+		for(int i=0;i<outStrings.length;i++){
+			bool=object.toString().contains(outStrings[i])||bool;
+		}
+		return bool;	
+	}
+	@SuppressWarnings("unchecked")
+	private Hashtable GetNode(File Fi, Hashtable has_xml) {
+
+		String filepath = Fi.getAbsolutePath();
+		SAXBuilder builder = new SAXBuilder(false);
+		try {
+			Document doc = builder.build(filepath);
+			Element root = doc.getRootElement();
+			// System.out.println(root.getName());
+			String Pro_name = get_xmlnode_project(root);
+			ArrayList<String> strs = get_xmlnode_parent(root);
+			has_xml.put(Pro_name, strs);
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
+		return has_xml;
+
+	}
+
+	private ArrayList<String> get_xmlnode_parent(Element parent) {
+		ArrayList<String> strs = new ArrayList<String>();
+		if (parent.getChildren().size() > 0) {
+			Element xmldecncys = parent.getChild("dependencies");
+			int i;
+			for (i = 0; i < xmldecncys.getChildren().size(); i++) {
+				Element tempElement = (Element) xmldecncys.getChildren().get(i);
+				strs.add(tempElement.getAttributeValue("name").toString());
+			}
+		}
+		return strs;
+	}
+
+	private String get_xmlnode_project(Element parent) {
+
+		String str = "";
+		if (parent.getChildren().size() > 0) {
+			Element xmldecncys = parent.getChild("info");
+			str = xmldecncys.getAttributeValue("module").toString();
+		}
+		return str;
+	}
+
+	private void OutPut(NodeClass node, ArrayList<String> Arr) {
+		if (!ExistOrNot(node.node_name, Arr)) {
+			Arr.add(node.node_name);
+			 if (node.childs == null)
+                 return;
+			 WriteStream(node);
+             for (int i = 0; i < node.childs.size(); i++)
+             {
+
+            	 OutPut(node.childs.get(i),Arr);
+
+             }
+		}
+
+	}
+
+	private void OutPutColor(NodeClass node, ArrayList<String> Arr) {
+		if (!ExistOrNot(node.node_name, Arr)) {
+			Arr.add(node.node_name);
+			topoString +=ShowColor(node.node_name);
+			if (node.childs == null)
+                return;
+			//AddColor(node);
+             for (int i = 0; i < node.childs.size(); i++)
+             {
+            	 OutPutColor(node.childs.get(i),Arr);
+             }
+		}
+	}
+	private void WriteStream(NodeClass n)
+      {
+		/* File file=new File("C:/test.txt");
+		 try {
+			 BufferedWriter bwWriter=new BufferedWriter(new FileWriter(file));*/
+			 if(n.childs!=null&&ContainOrNot(n.node_name)){
+	              int i;
+	              for(i=0;i<n.childs.size();i++){
+	                  boolean  Exist = true;
+	                  String string="\"" + n.childs.get(i).node_name + "\"" + " -> " + "\"" + n.node_name + "\"" + ";";
+	                  if (ShowOrNot(n, n.childs.get(i).node_name, n.node_name,  Exist)&&!topoString.contains(string)&&ContainOrNot(n.childs.get(i).node_name)){
+	         	 
+	                	  topoString += string;
+	                  }
+	              }
+
+			 }
+			/* if(n.childs!=null&&ContainOrNot(n.node_name)&&n.node_name.startsWith("purescale")){
+	              int i;
+	              for(i=0;i<n.childs.size();i++){
+	                 // boolean  Exist = true;
+	                  String string="\"" + n.childs.get(i).node_name + "\"" + " -> " + "\"" + n.node_name + "\"" + ";";//+ShowColor(n.childs.get(i).node_name)+ShowColor(n.node_name);
+	                  if (!topoString.contains(string)&&ContainOrNot(n.childs.get(i).node_name)){//
+	         	 
+	                	  topoString += string;
+	                  }
+	              }
+
+			 }*/
+
+		
+	}
+	/*private void AddColor(NodeClass n){
+		if(n.childs!=null&&ContainOrNot(n.node_name))
+		{
+            int i;
+            boolean  Exist = true;
+            for(i=0;i<n.childs.size();i++){
+                String string=ShowColor(n.childs.get(i).node_name);
+                if (ContainOrNot(n.childs.get(i).node_name)){//ShowOrNot(n, n.childs.get(i).node_name, n.node_name,  Exist)&&
+              	  topoString += string;
+                }
+            }
+		 }
+
+	}*/
+	@SuppressWarnings("unchecked")
+	private String ShowColor(String node_name){
+		 
+		Hashtable hashtable=new Hashtable();
+		
+		String string="";
+		for(int m=0;m<outStrings.length;m++){
+	        hashtable.put(outStrings[m],ColorStrings[m]);			
+		}
+		for(int m=0;m<outStrings.length;m++){
+			if( node_name.contains(outStrings[m])){
+				string +="\""+node_name+"\""+"[style=filled,color="+hashtable.get(outStrings[m])+"];"; 
+			}
+			/*else{
+				if(node_name.contains("sce")){
+					string +="\""+node_name+"\""+"[style=filled,color="+hashtable.get(outStrings[m])+"];"; 
+				}
+			}*/
+		}
+		return string;
+	}
+	private boolean ShowOrNot(NodeClass n, String childname, String nodename,  Boolean Exist)
+	        {
+	            
+	            int i;
+	            if (n.childs != null)
+	            {
+	                for (i = 0; i < n.childs.size(); i++)
+	                {
+	                    if (n.childs.get(i).node_name.equals(childname))
+	                    {
+	                        if (n.node_name.equals(nodename))
+	                            continue;
+	                        else
+	                        {
+	                            Exist = false;
+	                            break;
+	                        }
+	                    }
+	                    else
+	                    {
+
+	                        Exist = ShowOrNot(n.childs.get(i), childname, nodename,Exist);
+
+	                    }
+
+	                }
+	            }
+	            return Exist;
+	 
+	        }
+	private   Boolean ExistOrNot(String Nodename, ArrayList<String> NodeStr) {
+
+		Boolean Exist = false;
+
+		for (int i = 0; i < NodeStr.size(); i++) {
+			if (NodeStr.get(i).toString().equals(Nodename)) {
+				Exist = true;
+				break;
+			} else {
+				continue;
+
+			}
+		}
+		return Exist;
+
+	}
+	@SuppressWarnings("unchecked")
+	public String ReadOutXML(String WorkSpaceParh,String []out,String []color){
+		outStrings=out;
+		ColorStrings=color;
+		/*topoStrings=new String[outStrings.length];
+		for(int m=0;m<outStrings.length;m++){
+			topoStrings[m]="";
+		}*/
+		ArrayList<File> Arr = new ArrayList<File>();
+		File dir = new File(WorkSpaceParh);
+		path(dir, Arr);
+		int i;
+		Hashtable hastable_XML = new Hashtable();
+		for (i = 0; i < Arr.size(); i++) {
+			hastable_XML = GetNode((File) Arr.get(i), hastable_XML);
+		}
+		Hashtable has_nodes = new Hashtable();
+
+		for (Iterator<String> it = hastable_XML.keySet().iterator(); it.hasNext();) {
+			
+			String key = (String) it.next();
+			ArrayList<String> node_p = (ArrayList<String>) hastable_XML
+					.get(key);
+			if (has_nodes.get(key) == null) {
+				NodeClass node = new NodeClass(key, node_p, has_nodes,
+						hastable_XML);
+				has_nodes.put(node.node_name, node);
+			}
+			// System.out.println(key);
+		}
+		ArrayList<NodeClass> roots = new ArrayList<NodeClass>();
+		for (Iterator<String> it = has_nodes.keySet().iterator(); it.hasNext();) {
+			String key = (String) it.next();
+
+			NodeClass node = (NodeClass) has_nodes.get(key);
+			if (node.Parents.size() == 0) {
+				roots.add(node);
+			}
+			// System.out.println(key);
+		}
+		ArrayList<String> arrnodeArrayList = new ArrayList<String>();
+		for (int m = 0; m < roots.size(); m++) {
+			NodeClass rootClass = roots.get(m);
+			OutPutColor(rootClass, arrnodeArrayList);
+		}
+		arrnodeArrayList = new ArrayList<String>();
+		for (int m = 0; m < roots.size(); m++) {
+			//ArrayList<String> 
+			NodeClass rootClass = roots.get(m);
+			OutPut(rootClass, arrnodeArrayList);
+		}
+		return topoString;
+	}
+}
+
